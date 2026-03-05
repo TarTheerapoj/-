@@ -44,7 +44,7 @@ export default function LandingPage() {
     <div className="flex flex-col min-h-screen bg-[#111] text-white overflow-x-hidden">
 
       {/* ─── DARK HERO ─────────────────────────────────────────── */}
-      <section className="relative bg-[#111] pt-16 pb-0 overflow-hidden">
+      <section className="relative bg-[#111] pt-8 pb-0 overflow-hidden">
 
         {/* Faint grid */}
         <div
@@ -60,8 +60,8 @@ export default function LandingPage() {
 
         <div className="max-w-7xl mx-auto px-6 sm:px-10">
           {/* Eyebrow */}
-          <div className="flex items-center gap-3 mb-6">
-            <span className="text-[11px] font-black tracking-[0.25em] uppercase" style={{ color: "#9BEC00" }}>The 2026 CrossFit Open</span>
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-[11px] font-black tracking-[0.25em] uppercase" style={{ color: "#9BEC00" }}>The CrossFit Open 2026</span>
             <div className="h-px w-12" style={{ backgroundColor: "#9BEC00", opacity: 0.5 }} />
           </div>
 
