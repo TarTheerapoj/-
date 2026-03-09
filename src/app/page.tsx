@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Trophy, BarChart3, Dumbbell, MapPin, ChevronRight, Clock } from "lucide-react";
+import { ArrowRight, BarChart3, Dumbbell, MapPin, ChevronRight, Clock } from "lucide-react";
 import { SUMMARY_STATS, WORKOUTS } from "@/lib/data/workouts";
 
 const latest = SUMMARY_STATS.participationByYear[SUMMARY_STATS.participationByYear.length - 1];
@@ -267,7 +267,6 @@ export default function LandingPage() {
           <div className="flex items-center gap-6 text-xs text-white/30 font-bold tracking-widest uppercase">
             <span>{SUMMARY_STATS.totalAthletes} Athletes</span>
             <span>{SUMMARY_STATS.totalAffiliates} Affiliates</span>
-            <span>{SUMMARY_STATS.totalProvinces} Provinces</span>
             <span>Season 2026</span>
           </div>
         </div>

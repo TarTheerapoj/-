@@ -30,11 +30,13 @@ export function useRankingsData() {
         const headers = lines[0].split(',').map(h => h.trim());
         const parsed = lines.slice(1).map(line => {
           const values = line.split(',').map(v => v.trim());
-          const entry: any = {};
-          headers.forEach((header, i) => {
-            entry[header] = values[i] || "";
-          });
-          return entry as RankingEntry;
+          return {
+            "TH Rank":       values[headers.indexOf("TH Rank")]       || "",
+            "Reps Men":      values[headers.indexOf("Reps Men")]      || "",
+            "Division Men":  values[headers.indexOf("Division Men")]  || "",
+            "Reps Women":    values[headers.indexOf("Reps Women")]    || "",
+            "Division Women":values[headers.indexOf("Division Women")]|| "",
+          } as RankingEntry;
         });
 
         setData(parsed);

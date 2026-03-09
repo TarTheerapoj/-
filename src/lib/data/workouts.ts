@@ -63,7 +63,7 @@ export const WORKOUTS: Workout[] = [
       },
       {
         name: "Scaled",
-        description: WORKOUT_26_1_DESCRIPTION.replace("box jump-overs", "box jump-overs"),
+        description: WORKOUT_26_1_DESCRIPTION,
         equipment: {
           women: "10-lb (4-kg) medicine ball, 9-foot target, 20-inch box (may step up)",
           men: "14-lb (6-kg) medicine ball, 10-foot target, 24-inch box (may step up)",
@@ -170,7 +170,7 @@ export const SUMMARY_STATS = {
   totalAffiliates: 24,
   totalProvinces: 18,
   year: 2026,
-  edition: "CrossFit Open 25",
+  edition: "CrossFit Open 26",
   divisions: [
     { name: "Men Rx", count: 112 },
     { name: "Women Rx", count: 98 },
