@@ -88,12 +88,12 @@ export default function ParticipationChart({ data }: Props) {
           </defs>
           <XAxis
             dataKey="year"
-            tick={{ fontSize: 11, fill: "#888" }}
+            tick={{ fontSize: 11, fill: "#555", fontWeight: 600 }}
             axisLine={{ stroke: "#ccc" }}
             tickLine={false}
           />
           <YAxis
-            tick={{ fontSize: 10, fill: "#999" }}
+            tick={{ fontSize: 10, fill: "#666" }}
             axisLine={false}
             tickLine={false}
           />

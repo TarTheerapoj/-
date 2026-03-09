@@ -1,19 +1,19 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { SUMMARY_STATS } from "@/lib/data/workouts";
 import ParticipationChart from "@/components/charts/ParticipationChart";
 import AffiliateGrowthChart from "@/components/charts/AffiliateGrowthChart";
 import OpenRegistrationChart from "@/components/charts/OpenRegistrationChart";
-import { SparklineBar } from "@/components/charts/SparklineBar";
 
 const latest = SUMMARY_STATS.participationByYear[SUMMARY_STATS.participationByYear.length - 1];
 const prev   = SUMMARY_STATS.participationByYear[SUMMARY_STATS.participationByYear.length - 2];
 const athleteGrowthPct = Math.round(((latest.total - prev.total) / prev.total) * 100);
-const affiliateData = [11, 13, 16, 19, 24];
+const menPct   = Math.round((latest.men   / latest.total) * 100);
+const womenPct = Math.round((latest.women / latest.total) * 100);
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-8">
-      {/* Dark hero header */}
+    <div className="space-y-0">
+      {/* ── DARK HERO ── */}
       <section className="bg-[#111] text-white relative overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-0.5" style={{ backgroundColor: "#9BEC00" }} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
@@ -28,94 +28,92 @@ export default function DashboardPage() {
             วิเคราะห์ผลการแข่งขัน CrossFit Open 2026 ของนักกีฬาไทย แยกตาม Division อย่างครอบคลุม
           </p>
         </div>
+
+        {/* ── KPI STRIP (dark, inside hero) ── */}
+        <div className="border-t border-white/10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-white/10">
+              {[
+                { v: SUMMARY_STATS.totalAthletes, unit: "คน",  label: "นักกีฬาทั้งหมด",   badge: `+${athleteGrowthPct}% vs 2025`, badgeColor: "#9BEC00", badgeText: "#111" },
+                { v: latest.men,                  unit: "คน",  label: "ชาย (2026)",        badge: `${menPct}%`,                   badgeColor: "#3b82f6", badgeText: "#fff" },
+                { v: latest.women,                unit: "คน",  label: "หญิง (2026)",       badge: `${womenPct}%`,                 badgeColor: "#f472b6", badgeText: "#fff" },
+                { v: SUMMARY_STATS.totalAffiliates, unit: "แห่ง", label: "Affiliates",    badge: "+118% ใน 4 ปี",                badgeColor: "#22c55e", badgeText: "#fff" },
+              ].map(({ v, unit, label, badge, badgeColor, badgeText }) => (
+                <div key={label} className="py-6 px-4 sm:px-6 flex flex-col gap-1">
+                  <p className="text-[10px] font-black tracking-widest uppercase text-white/40">{label}</p>
+                  <p className="text-3xl sm:text-4xl font-black tabular-nums text-white leading-none">
+                    {v}<span className="text-sm font-normal text-white/40 ml-1">{unit}</span>
+                  </p>
+                  <span className="self-start mt-1 text-[10px] font-black px-2 py-0.5 rounded" style={{ backgroundColor: badgeColor, color: badgeText }}>{badge}</span>
+                </div>
+              ))}
+            </div>
+            {/* Men/Women full-width bar */}
+            <div className="flex w-full h-1 overflow-hidden">
+              <div style={{ width: `${menPct}%`,   backgroundColor: "#3b82f6" }} />
+              <div style={{ width: `${womenPct}%`, backgroundColor: "#f472b6" }} />
+            </div>
+          </div>
+        </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6 py-8">
 
-      {/* Stat cards */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* ── CHARTS SIDE BY SIDE ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        {/* Athletes card */}
-        <Card className="border-border/50 bg-card overflow-hidden">
-          <CardContent className="p-5">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">นักกีฬาทั้งหมด</p>
-                <p className="text-3xl font-black mt-0.5">
-                  {SUMMARY_STATS.totalAthletes.toLocaleString()}
-                  <span className="text-sm font-normal text-muted-foreground ml-1">คน</span>
-                </p>
+          {/* Participation — takes 2/3 */}
+          <Card className="lg:col-span-2 border-border/50 bg-card">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <p className="text-[10px] font-black tracking-widest uppercase text-muted-foreground">การเติบโตของผู้เข้าร่วม</p>
+                  <p className="text-sm font-bold mt-0.5">2017–2026 · แยกตามเพศหรือดูรวม</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{SUMMARY_STATS.participationByYear[0].total} คน → {latest.total} คน · ผู้เข้าร่วมทั้งหมด</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-black text-green-500">+{Math.round(((latest.total - SUMMARY_STATS.participationByYear[0].total) / SUMMARY_STATS.participationByYear[0].total) * 100)}%</p>
+                  <p className="text-[10px] text-muted-foreground">2017→2026</p>
+                </div>
               </div>
-              <span className="text-xs font-black px-2 py-0.5 rounded" style={{ backgroundColor: "#9BEC00", color: "#111" }}>
-                +{athleteGrowthPct}% vs 2025
-              </span>
-            </div>
-            {/* Men/Women split */}
-            <div className="flex gap-4 mb-3">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />
-                <span className="text-xs text-muted-foreground">ชาย</span>
-                <span className="text-xs font-bold">{latest.men}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-pink-400 inline-block" />
-                <span className="text-xs text-muted-foreground">หญิง</span>
-                <span className="text-xs font-bold">{latest.women}</span>
-              </div>
-              <div className="flex items-center gap-1.5 ml-auto">
-                <span className="text-[10px] text-muted-foreground">
-                  ชาย {Math.round((latest.men / latest.total) * 100)}% · หญิง {Math.round((latest.women / latest.total) * 100)}%
-                </span>
-              </div>
-            </div>
-            {/* Proportion bar */}
-            <div className="flex w-full h-1.5 rounded-full overflow-hidden">
-              <div style={{ width: `${Math.round((latest.men / latest.total) * 100)}%`, backgroundColor: "#3b82f6" }} />
-              <div style={{ width: `${Math.round((latest.women / latest.total) * 100)}%`, backgroundColor: "#f472b6" }} />
-            </div>
-          </CardContent>
-        </Card>
+              <ParticipationChart data={SUMMARY_STATS.participationByYear} />
+            </CardContent>
+          </Card>
 
-        {/* Affiliate card */}
-        <Card className="border-border/50 bg-card overflow-hidden">
-          <CardContent className="p-5">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">CrossFit Affiliate</p>
-                <p className="text-3xl font-black mt-0.5">
-                  {SUMMARY_STATS.totalAffiliates}
-                  <span className="text-sm font-normal text-muted-foreground ml-1">แห่ง</span>
-                </p>
+          {/* Affiliate — takes 1/3 */}
+          <Card className="border-border/50 bg-card">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-1">
+                <div>
+                  <p className="text-[10px] font-black tracking-widest uppercase text-muted-foreground">CrossFit Affiliates</p>
+                  <p className="text-sm font-bold mt-0.5">2022–2026</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-black text-green-500">+118%</p>
+                  <p className="text-[10px] text-muted-foreground">ใน 4 ปี</p>
+                </div>
               </div>
-              <span className="text-xs font-black px-2 py-0.5 rounded bg-blue-100 text-blue-700">
-                +118% ใน 4 ปี
-              </span>
-            </div>
-            {/* Sparkline */}
-            <p className="text-[10px] text-muted-foreground mb-1.5">การเติบโต 2022–2026</p>
-            <SparklineBar data={affiliateData} color="#3b82f6" />
-            <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-              <span>2022 · 11</span>
-              <span>2023 · 13</span>
-              <span>2024 · 16</span>
-              <span>2025 · 19</span>
-              <span className="font-bold text-blue-600">2026 · 24</span>
-            </div>
-          </CardContent>
-        </Card>
+              <p className="text-[10px] text-muted-foreground mb-3">11 แห่ง → {SUMMARY_STATS.totalAffiliates} แห่ง · ไม่มีปีถอยหลัง</p>
+              <AffiliateGrowthChart />
+              <div className="mt-3 grid grid-cols-5 gap-1">
+                {[
+                  { year: "2022", v: 11 },
+                  { year: "2023", v: 13 },
+                  { year: "2024", v: 16 },
+                  { year: "2025", v: 19 },
+                  { year: "2026", v: 24 },
+                ].map(({ year, v }, i, arr) => (
+                  <div key={year} className="text-center">
+                    <p className="text-xs font-black">{v}</p>
+                    <p className="text-[9px] text-muted-foreground">{year}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      </section>
 
-      {/* Participation chart */}
-      <Card className="border-border/50 bg-card">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">การเติบโตของผู้เข้าร่วม</CardTitle>
-          <p className="text-xs text-muted-foreground">จำนวนนักกีฬาในแต่ละปี (2017–2026) · แยกตามเพศหรือดูรวม</p>
-        </CardHeader>
-        <CardContent>
-          <ParticipationChart data={SUMMARY_STATS.participationByYear} />
-        </CardContent>
-      </Card>
       </div>
 
       {/* ─── INSIGHT SECTION ─────────────────────────────────── */}

@@ -7,6 +7,9 @@ import { Clock, ImageIcon } from "lucide-react";
 import { WORKOUTS, type WorkoutDivision } from "@/lib/data/workouts";
 import { useRankingsData } from "@/hooks/useRankingsData";
 import { cn } from "@/lib/utils";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+} from "recharts";
 
 const DIVISION_COLORS: Record<WorkoutDivision["name"], { bg: string; text: string; border: string }> = {
   Rx:          { bg: "#9BEC00", text: "#111", border: "#9BEC00" },
@@ -22,94 +25,81 @@ const GENDER_FILTERS: { key: GenderFilter; label: string; color: string; text: s
   { key: "women", label: "หญิง ♀", color: "#f472b6", text: "#fff" },
 ];
 
-function buildBins(reps: number[]): { label: string; count: number }[] {
-  if (!reps.length) return [];
-  const min = Math.min(...reps);
-  const max = Math.max(...reps);
-  const range = max - min;
-  const binSize = Math.ceil(range / 8) || 10;
-  const bins: { label: string; count: number }[] = [];
-  for (let start = Math.floor(min / binSize) * binSize; start <= max; start += binSize) {
-    const end = start + binSize - 1;
-    bins.push({ label: `${start}–${end}`, count: reps.filter(r => r >= start && r <= end).length });
+const BIN_SIZE = 20;
+
+function buildSharedBins(menReps: number[], womenReps: number[], gender: GenderFilter) {
+  const all = [...menReps, ...womenReps];
+  if (!all.length) return [];
+  const globalMin = Math.floor(Math.min(...all) / BIN_SIZE) * BIN_SIZE;
+  const globalMax = Math.ceil(Math.max(...all) / BIN_SIZE) * BIN_SIZE;
+  const bins = [];
+  for (let start = globalMin; start < globalMax; start += BIN_SIZE) {
+    const label = `${start}`;
+    bins.push({
+      label,
+      ชาย: gender !== "women" ? menReps.filter(r => r >= start && r < start + BIN_SIZE).length : undefined,
+      หญิง: gender !== "men" ? womenReps.filter(r => r >= start && r < start + BIN_SIZE).length : undefined,
+    });
   }
   return bins;
 }
 
-function ScoreDistributionBars({
-  men, women, gender,
+function ScoreDistributionChart({
+  menReps, womenReps, gender,
 }: {
-  men: number[];
-  women: number[];
+  menReps: number[];
+  womenReps: number[];
   gender: GenderFilter;
 }) {
-  const activeMen   = gender !== "women";
-  const activeWomen = gender !== "men";
+  const bins = useMemo(
+    () => buildSharedBins(menReps, womenReps, gender),
+    [menReps, womenReps, gender]
+  );
 
-  const menBins   = useMemo(() => buildBins(men),   [men]);
-  const womenBins = useMemo(() => buildBins(women), [women]);
-
-  const allBins = useMemo(() => {
-    const labels = new Set([...menBins.map(b => b.label), ...womenBins.map(b => b.label)]);
-    return Array.from(labels).sort((a, b) => parseInt(a) - parseInt(b)).map(label => ({
-      label,
-      men:   menBins.find(b => b.label === label)?.count   ?? 0,
-      women: womenBins.find(b => b.label === label)?.count ?? 0,
-    }));
-  }, [menBins, womenBins]);
-
-  const maxCount = Math.max(1, ...allBins.map(b =>
-    Math.max(activeMen ? b.men : 0, activeWomen ? b.women : 0)
-  ));
-
-  if (!allBins.length) return (
-    <div className="flex items-center justify-center h-32">
-      <p className="text-xs text-muted-foreground">ยังไม่มีข้อมูล</p>
+  if (!bins.length) return (
+    <div className="flex items-center justify-center h-36 text-xs text-muted-foreground">
+      ยังไม่มีข้อมูล
     </div>
   );
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-end gap-1 h-28">
-        {allBins.map((bin, i) => (
-          <div key={i} className="flex-1 flex flex-col items-center gap-0.5 justify-end h-full">
-            <div className="w-full flex gap-px items-end h-full">
-              {activeMen && (
-                <div
-                  className="flex-1 rounded-t-sm transition-all"
-                  style={{
-                    height: `${Math.round((bin.men / maxCount) * 100)}%`,
-                    backgroundColor: "#3b82f6",
-                    minHeight: bin.men > 0 ? "3px" : "0",
-                    opacity: 0.85,
-                  }}
-                />
-              )}
-              {activeWomen && (
-                <div
-                  className="flex-1 rounded-t-sm transition-all"
-                  style={{
-                    height: `${Math.round((bin.women / maxCount) * 100)}%`,
-                    backgroundColor: "#f472b6",
-                    minHeight: bin.women > 0 ? "3px" : "0",
-                    opacity: 0.85,
-                  }}
-                />
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-      {/* X axis labels */}
-      <div className="flex gap-1">
-        {allBins.map((bin, i) => (
-          <div key={i} className="flex-1 text-center">
-            <span className="text-[9px] text-muted-foreground leading-none">{bin.label.split("–")[0]}</span>
-          </div>
-        ))}
-      </div>
-      <p className="text-[10px] text-muted-foreground text-center">จำนวน reps</p>
-    </div>
+    <ResponsiveContainer width="100%" height={200}>
+      <BarChart data={bins} barGap={2} barCategoryGap="20%"
+        margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" vertical={false} />
+        <XAxis
+          dataKey="label"
+          tick={{ fontSize: 10, fill: "#888" }}
+          axisLine={false}
+          tickLine={false}
+          label={{ value: "reps", position: "insideBottom", offset: -2, fontSize: 10, fill: "#aaa" }}
+        />
+        <YAxis
+          tick={{ fontSize: 10, fill: "#888" }}
+          axisLine={false}
+          tickLine={false}
+          allowDecimals={false}
+        />
+        <Tooltip
+          contentStyle={{
+            backgroundColor: "var(--color-card, #fff)",
+            border: "1px solid rgba(0,0,0,0.1)",
+            borderRadius: 8,
+            fontSize: 12,
+          }}
+          cursor={{ fill: "rgba(0,0,0,0.04)" }}
+          formatter={(value, name) => [`${value ?? 0} คน`, name as string]}
+          labelFormatter={(label) => `${label}–${Number(label) + BIN_SIZE - 1} reps`}
+        />
+        {gender !== "women" && (
+          <Bar dataKey="ชาย" fill="#3b82f6" radius={[3, 3, 0, 0]} maxBarSize={28} />
+        )}
+        {gender !== "men" && (
+          <Bar dataKey="หญิง" fill="#f472b6" radius={[3, 3, 0, 0]} maxBarSize={28} />
+        )}
+        {gender === "all" && <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />}
+      </BarChart>
+    </ResponsiveContainer>
   );
 }
 
@@ -150,10 +140,37 @@ function WorkoutStats({ workout }: { workout: typeof WORKOUTS[0] }) {
     };
   }, [raw]);
 
-  if (!workout.id.startsWith("26")) return null;
-
+  const hasData = workout.id === "26.1";
   const showMen   = gender !== "women";
   const showWomen = gender !== "men";
+
+  if (!hasData) {
+    return (
+      <div className="rounded-xl border border-dashed border-border/40 bg-secondary/20 px-6 py-8 flex flex-col items-center gap-3 text-center">
+        <div className="w-10 h-10 rounded-full border border-border/30 flex items-center justify-center">
+          <Clock className="w-5 h-5 text-muted-foreground/40" />
+        </div>
+        <div>
+          <p className="text-sm font-black text-muted-foreground/50 uppercase tracking-widest">รอ Update คะแนน</p>
+          <p className="text-xs text-muted-foreground/40 mt-1">ข้อมูลสถิติ RX จะแสดงหลังจากปิดรับคะแนน</p>
+        </div>
+        <div className="flex gap-4 mt-1">
+          {[
+            { label: "ค่าเฉลี่ย ชาย", color: "#3b82f6" },
+            { label: "สูงสุด ชาย",    color: "#3b82f6" },
+            { label: "ค่าเฉลี่ย หญิง", color: "#f472b6" },
+            { label: "สูงสุด หญิง",   color: "#f472b6" },
+          ].map(({ label, color }) => (
+            <div key={label} className="rounded-lg border border-border/30 bg-secondary/30 px-4 py-3 text-center min-w-[80px]">
+              <p className="text-[9px] text-muted-foreground/40 uppercase tracking-widest mb-1">{label}</p>
+              <p className="text-xl font-black text-muted-foreground/20">—</p>
+              <p className="text-[9px] text-muted-foreground/30 mt-0.5">reps</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">
@@ -211,7 +228,7 @@ function WorkoutStats({ workout }: { workout: typeof WORKOUTS[0] }) {
                 {showWomen && <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground"><span className="w-2.5 h-2.5 rounded-sm inline-block bg-pink-400" />หญิง</span>}
               </div>
             </div>
-            <ScoreDistributionBars men={menReps} women={womenReps} gender={gender} />
+            <ScoreDistributionChart menReps={menReps} womenReps={womenReps} gender={gender} />
           </div>
         </>
       )}
@@ -254,18 +271,32 @@ function WorkoutCard({ workout }: { workout: typeof WORKOUTS[0] }) {
         {/* Row 1: Image + Division description */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
-          {/* Image */}
-          <div>
+          {/* Image + Notes */}
+          <div className="space-y-3">
             {workout.image ? (
-              <div className="w-full h-full min-h-[220px] rounded-xl overflow-hidden border border-border/50">
+              <div className="w-full rounded-xl overflow-hidden border border-border/50">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={workout.image} alt={`CrossFit Open ${workout.name}`}
-                  className="w-full h-full object-cover object-center" style={{ maxHeight: 340 }} />
+                  className="w-full object-cover object-center" style={{ maxHeight: 280 }} />
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center w-full min-h-[220px] rounded-xl border-2 border-dashed border-border/40 bg-secondary/30">
                 <ImageIcon className="w-8 h-8 text-muted-foreground/30 mb-2" />
                 <p className="text-xs text-muted-foreground/50">อัปโหลดรูปประกอบ workout</p>
+              </div>
+            )}
+
+            {/* Notes */}
+            {workout.notes && workout.notes.length > 0 && (
+              <div className="rounded-lg border border-border/50 overflow-hidden">
+                <div className="px-3 py-2 bg-secondary/50 border-b border-border/40">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">NOTES</p>
+                </div>
+                <div className="px-3 py-2.5 space-y-1.5">
+                  {workout.notes.map((note, i) => (
+                    <p key={i} className="text-xs text-muted-foreground leading-relaxed">• {note}</p>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -320,6 +351,27 @@ function WorkoutCard({ workout }: { workout: typeof WORKOUTS[0] }) {
   );
 }
 
+function ComingSoonWorkoutCard({ workout }: { workout: typeof WORKOUTS[0] }) {
+  return (
+    <Card className="border-border/50 bg-card overflow-hidden">
+      <div className="h-1" style={{ background: "linear-gradient(to right, #9BEC0040, transparent)" }} />
+      <CardContent className="py-12 flex flex-col items-center justify-center gap-4 text-center">
+        <div className="w-14 h-14 rounded-full border-2 border-dashed border-border/40 flex items-center justify-center">
+          <Clock className="w-6 h-6 text-muted-foreground/40" />
+        </div>
+        <div>
+          <p className="text-2xl font-black tracking-tight text-muted-foreground/30">{workout.name}</p>
+          <p className="text-sm font-bold text-muted-foreground/50 mt-1">รอประกาศ Workout</p>
+          <p className="text-xs text-muted-foreground/40 mt-0.5">Coming Soon · CrossFit Open 2026</p>
+        </div>
+        <Badge variant="outline" className="text-xs border-border/30 text-muted-foreground/40">
+          ยังไม่ประกาศ
+        </Badge>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function WorkoutsPage() {
   return (
     <div className="space-y-8">
@@ -342,9 +394,13 @@ export default function WorkoutsPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-8">
         <div className="space-y-10">
-          {WORKOUTS.map((workout) => (
-            <WorkoutCard key={workout.id} workout={workout} />
-          ))}
+          {WORKOUTS.map((workout) =>
+            workout.comingSoon ? (
+              <ComingSoonWorkoutCard key={workout.id} workout={workout} />
+            ) : (
+              <WorkoutCard key={workout.id} workout={workout} />
+            )
+          )}
         </div>
       </div>
     </div>
