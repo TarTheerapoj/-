@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Trophy, Dumbbell, BarChart3, MapPin, Menu, X } from "lucide-react";
+import { Trophy, Dumbbell, BarChart3, MapPin, BookOpen, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { href: "/dashboard",   label: "ภาพรวม",          icon: BarChart3, comingSoon: false },
-  { href: "/workouts",    label: "เวิร์คเอาท์",       icon: Dumbbell,  comingSoon: false },
-  { href: "/leaderboard", label: "ลีดเดอร์บอร์ด",  icon: Trophy,    comingSoon: true  },
-  { href: "/provinces",   label: "จังหวัด",          icon: MapPin,    comingSoon: true  },
+  { href: "/dashboard",   label: "ภาพรวม",          icon: BarChart3,  comingSoon: false },
+  { href: "/workouts",    label: "เวิร์คเอาท์",       icon: Dumbbell,   comingSoon: false },
+  { href: "/movements",   label: "Movements",        icon: BookOpen,   comingSoon: false },
+  { href: "/leaderboard", label: "ลีดเดอร์บอร์ด",  icon: Trophy,     comingSoon: true  },
+  { href: "/provinces",   label: "จังหวัด",          icon: MapPin,     comingSoon: true  },
 ];
 
 export default function Navbar() {

@@ -27,7 +27,14 @@ const GENDER_FILTERS: { key: GenderFilter; label: string; color: string; text: s
 
 const BIN_SIZE = 20;
 
-function buildSharedBins(menReps: number[], womenReps: number[], gender: GenderFilter) {
+function formatTime(seconds: number): string {
+  if (seconds < 60) return `${seconds}s`;
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+function buildSharedBins(menReps: number[], womenReps: number[], gender: GenderFilter, workoutId?: string) {
   const all = [...menReps, ...womenReps];
   if (!all.length) return [];
   const globalMin = Math.floor(Math.min(...all) / BIN_SIZE) * BIN_SIZE;
@@ -45,15 +52,16 @@ function buildSharedBins(menReps: number[], womenReps: number[], gender: GenderF
 }
 
 function ScoreDistributionChart({
-  menReps, womenReps, gender,
+  menReps, womenReps, gender, workoutId,
 }: {
   menReps: number[];
   womenReps: number[];
   gender: GenderFilter;
+  workoutId?: string;
 }) {
   const bins = useMemo(
-    () => buildSharedBins(menReps, womenReps, gender),
-    [menReps, womenReps, gender]
+    () => buildSharedBins(menReps, womenReps, gender, workoutId),
+    [menReps, womenReps, gender, workoutId]
   );
 
   if (!bins.length) return (
@@ -72,7 +80,13 @@ function ScoreDistributionChart({
           tick={{ fontSize: 10, fill: "#888" }}
           axisLine={false}
           tickLine={false}
-          label={{ value: "reps", position: "insideBottom", offset: -2, fontSize: 10, fill: "#aaa" }}
+          label={{ 
+            value: workoutId === "26.2" ? "seconds" : "reps", 
+            position: "insideBottom", 
+            offset: -2, 
+            fontSize: 10, 
+            fill: "#aaa" 
+          }}
         />
         <YAxis
           tick={{ fontSize: 10, fill: "#888" }}
@@ -89,7 +103,10 @@ function ScoreDistributionChart({
           }}
           cursor={{ fill: "rgba(0,0,0,0.04)" }}
           formatter={(value, name) => [`${value ?? 0} คน`, name as string]}
-          labelFormatter={(label) => `${label}–${Number(label) + BIN_SIZE - 1} reps`}
+          labelFormatter={(label) => {
+            const unit = workoutId === "26.2" ? "seconds" : "reps";
+            return `${label}–${Number(label) + BIN_SIZE - 1} ${unit}`;
+          }}
         />
         {gender !== "women" && (
           <Bar dataKey="ชาย" fill="#3b82f6" radius={[3, 3, 0, 0]} maxBarSize={28} />
@@ -113,34 +130,73 @@ function RxStatsBar({ label, value, color, sub }: { label: string; value: string
   );
 }
 
+// ── Parse helpers for 26.2 ──────────────────────────────────────────
+function parseScore262(score: string): { type: "finished" | "timed_out" | "none"; value: number } {
+  if (!score || score === "(--)" || score === "--") return { type: "none", value: 0 };
+  // finished: (8:57) or (8:57 - s) etc — has M:SS pattern
+  const timeMatch = score.match(/\((\d+):(\d+)/);
+  if (timeMatch) return { type: "finished", value: Number(timeMatch[1]) * 60 + Number(timeMatch[2]) };
+  // timed out: (128 reps) or (128 reps - s) etc
+  const repsMatch = score.match(/\((\d+) reps/);
+  if (repsMatch) return { type: "timed_out", value: Number(repsMatch[1]) };
+  return { type: "none", value: 0 };
+}
+
 function WorkoutStats({ workout }: { workout: typeof WORKOUTS[0] }) {
   const [gender, setGender] = useState<GenderFilter>("all");
-  const { data: raw, loading } = useRankingsData();
+  const { data: raw, loading } = useRankingsData(workout.id as "26.1" | "26.2");
 
-  const { men, women, menReps, womenReps } = useMemo(() => {
+  // ── 26.1 stats (reps) ──────────────────────────────────────────────
+  const stats261 = useMemo(() => {
+    if (workout.id !== "26.1") return null;
     const isValid = (reps: string, div: string) =>
       reps && reps !== "0" && reps !== "Null" && div && div !== "-";
-
-    const menReps = raw
+    const menReps = (raw as any[])
       .filter(r => isValid(r["Reps Men"], r["Division Men"]) && r["Division Men"] === "RX")
       .map(r => Number(r["Reps Men"]));
-
-    const womenReps = raw
+    const womenReps = (raw as any[])
       .filter(r => isValid(r["Reps Women"], r["Division Women"]) && r["Division Women"] === "RX")
       .map(r => Number(r["Reps Women"]));
-
     const avg = (arr: number[]) =>
       arr.length ? Math.round(arr.reduce((s, v) => s + v, 0) / arr.length) : 0;
-
     return {
       men:   { count: menReps.length,   avg: avg(menReps),   top: Math.max(0, ...menReps)   },
       women: { count: womenReps.length, avg: avg(womenReps), top: Math.max(0, ...womenReps) },
       menReps,
       womenReps,
     };
-  }, [raw]);
+  }, [raw, workout.id]);
 
-  const hasData = workout.id === "26.1";
+  // ── 26.2 stats (time + reps separated) ────────────────────────────
+  const stats262 = useMemo(() => {
+    if (workout.id !== "26.2") return null;
+    const avg = (arr: number[]) =>
+      arr.length ? Math.round(arr.reduce((s, v) => s + v, 0) / arr.length) : 0;
+
+    const parseGroup = (scoreKey: string, divKey: string) => {
+      const rxRows = (raw as any[]).filter(r => r[divKey] === "RX" && r[scoreKey] && r[scoreKey] !== "(--)" && r[scoreKey] !== "--");
+      const finished   = rxRows.filter(r => parseScore262(r[scoreKey]).type === "finished").map(r => parseScore262(r[scoreKey]).value);
+      const timed_out  = rxRows.filter(r => parseScore262(r[scoreKey]).type === "timed_out").map(r => parseScore262(r[scoreKey]).value);
+      return {
+        finishedCount: finished.length,
+        timedOutCount: timed_out.length,
+        totalRx: rxRows.length,
+        fastestSec: finished.length ? Math.min(...finished) : 0,
+        avgTimeSec: avg(finished),
+        avgReps: avg(timed_out),
+        topReps: timed_out.length ? Math.max(...timed_out) : 0,
+        // for chart: reps from timed-out athletes
+        repsArr: timed_out,
+      };
+    };
+
+    return {
+      men:   parseGroup("Score Men",   "Division Men"),
+      women: parseGroup("Score Women", "Division Women"),
+    };
+  }, [raw, workout.id]);
+
+  const hasData = workout.id === "26.1" || workout.id === "26.2";
   const showMen   = gender !== "women";
   const showWomen = gender !== "men";
 
@@ -180,9 +236,14 @@ function WorkoutStats({ workout }: { workout: typeof WORKOUTS[0] }) {
           <p className="text-xs font-black text-foreground/50 uppercase tracking-widest">
             สถิติ RX · Thailand {workout.name}
           </p>
-          {!loading && (
+          {!loading && stats261 && (
             <p className="text-[10px] text-muted-foreground mt-0.5">
-              ชาย {men.count} คน · หญิง {women.count} คน
+              ชาย {stats261.men.count} คน · หญิง {stats261.women.count} คน
+            </p>
+          )}
+          {!loading && stats262 && (
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              ชาย {stats262.men.totalRx} คน · หญิง {stats262.women.totalRx} คน
             </p>
           )}
         </div>
@@ -205,21 +266,19 @@ function WorkoutStats({ workout }: { workout: typeof WORKOUTS[0] }) {
         <div className="py-8 flex items-center justify-center">
           <p className="text-xs text-muted-foreground">กำลังโหลดข้อมูล...</p>
         </div>
-      ) : (
+      ) : stats261 ? (
         <>
-          {/* Stat cards: avg + top per gender */}
+          {/* 26.1: simple reps stat cards */}
           <div className={cn("grid gap-3", showMen && showWomen ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-2")}>
             {showMen && <>
-              <RxStatsBar label="ค่าเฉลี่ย ชาย" value={`${men.avg}`} color="#3b82f6" sub="reps" />
-              <RxStatsBar label="สูงสุด ชาย" value={`${men.top}`} color="#3b82f6" sub="reps" />
+              <RxStatsBar label="ค่าเฉลี่ย ชาย" value={`${stats261.men.avg}`} color="#3b82f6" sub="reps" />
+              <RxStatsBar label="สูงสุด ชาย"   value={`${stats261.men.top}`} color="#3b82f6" sub="reps" />
             </>}
             {showWomen && <>
-              <RxStatsBar label="ค่าเฉลี่ย หญิง" value={`${women.avg}`} color="#f472b6" sub="reps" />
-              <RxStatsBar label="สูงสุด หญิง" value={`${women.top}`} color="#f472b6" sub="reps" />
+              <RxStatsBar label="ค่าเฉลี่ย หญิง" value={`${stats261.women.avg}`} color="#f472b6" sub="reps" />
+              <RxStatsBar label="สูงสุด หญิง"   value={`${stats261.women.top}`} color="#f472b6" sub="reps" />
             </>}
           </div>
-
-          {/* Score distribution bar chart */}
           <div className="rounded-xl border border-border/50 p-4 space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">การกระจายคะแนน · Rx</p>
@@ -228,10 +287,89 @@ function WorkoutStats({ workout }: { workout: typeof WORKOUTS[0] }) {
                 {showWomen && <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground"><span className="w-2.5 h-2.5 rounded-sm inline-block bg-pink-400" />หญิง</span>}
               </div>
             </div>
-            <ScoreDistributionChart menReps={menReps} womenReps={womenReps} gender={gender} />
+            <ScoreDistributionChart menReps={stats261.menReps} womenReps={stats261.womenReps} gender={gender} />
           </div>
         </>
-      )}
+      ) : stats262 ? (
+        <>
+          {/* 26.2: Finished vs Timed Out breakdown */}
+          {(showMen || showWomen) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {showMen && (
+                <div className="rounded-xl border border-border/50 p-4 space-y-3">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-blue-500">ชาย ♂ · RX</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="rounded-lg bg-secondary/50 p-3 text-center">
+                      <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">จบทัน</p>
+                      <p className="text-xl font-black text-blue-500">{stats262.men.finishedCount}</p>
+                      <p className="text-[9px] text-muted-foreground">คน</p>
+                    </div>
+                    <div className="rounded-lg bg-secondary/50 p-3 text-center">
+                      <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">ไม่จบ</p>
+                      <p className="text-xl font-black text-orange-400">{stats262.men.timedOutCount}</p>
+                      <p className="text-[9px] text-muted-foreground">คน</p>
+                    </div>
+                    <div className="rounded-lg bg-secondary/50 p-3 text-center">
+                      <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">เร็วสุด</p>
+                      <p className="text-lg font-black text-blue-500">{stats262.men.fastestSec ? formatTime(stats262.men.fastestSec) : "—"}</p>
+                    </div>
+                    <div className="rounded-lg bg-secondary/50 p-3 text-center">
+                      <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">เฉลี่ย reps</p>
+                      <p className="text-lg font-black text-orange-400">{stats262.men.avgReps || "—"}</p>
+                      <p className="text-[9px] text-muted-foreground">reps</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {showWomen && (
+                <div className="rounded-xl border border-border/50 p-4 space-y-3">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-pink-400">หญิง ♀ · RX</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="rounded-lg bg-secondary/50 p-3 text-center">
+                      <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">จบทัน</p>
+                      <p className="text-xl font-black text-pink-400">{stats262.women.finishedCount}</p>
+                      <p className="text-[9px] text-muted-foreground">คน</p>
+                    </div>
+                    <div className="rounded-lg bg-secondary/50 p-3 text-center">
+                      <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">ไม่จบ</p>
+                      <p className="text-xl font-black text-orange-400">{stats262.women.timedOutCount}</p>
+                      <p className="text-[9px] text-muted-foreground">คน</p>
+                    </div>
+                    <div className="rounded-lg bg-secondary/50 p-3 text-center">
+                      <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">เร็วสุด</p>
+                      <p className="text-lg font-black text-pink-400">{stats262.women.fastestSec ? formatTime(stats262.women.fastestSec) : "—"}</p>
+                    </div>
+                    <div className="rounded-lg bg-secondary/50 p-3 text-center">
+                      <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">เฉลี่ย reps</p>
+                      <p className="text-lg font-black text-orange-400">{stats262.women.avgReps || "—"}</p>
+                      <p className="text-[9px] text-muted-foreground">reps</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Chart: reps distribution for timed-out athletes only */}
+          <div className="rounded-xl border border-border/50 p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">การกระจาย reps · Rx (ไม่จบ)</p>
+                <p className="text-[9px] text-muted-foreground mt-0.5">เฉพาะนักกีฬาที่ไม่จบทัน Time Cap</p>
+              </div>
+              <div className="flex gap-3">
+                {showMen   && <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground"><span className="w-2.5 h-2.5 rounded-sm inline-block bg-blue-500" />ชาย</span>}
+                {showWomen && <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground"><span className="w-2.5 h-2.5 rounded-sm inline-block bg-pink-400" />หญิง</span>}
+              </div>
+            </div>
+            <ScoreDistributionChart
+              menReps={showMen ? stats262.men.repsArr : []}
+              womenReps={showWomen ? stats262.women.repsArr : []}
+              gender={gender}
+            />
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }
