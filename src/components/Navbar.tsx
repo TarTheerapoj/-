@@ -11,7 +11,7 @@ const NAV_ITEMS = [
   { href: "/workouts",    label: "เวิร์คเอาท์",       icon: Dumbbell,   comingSoon: false },
   { href: "/movements",   label: "Movements",        icon: BookOpen,   comingSoon: false },
   { href: "/leaderboard", label: "ลีดเดอร์บอร์ด",  icon: Trophy,     comingSoon: true  },
-  { href: "/provinces",   label: "จังหวัด",          icon: MapPin,     comingSoon: true  },
+  { href: "/provinces",   label: "จังหวัด",          icon: MapPin,     comingSoon: false },
 ];
 
 export default function Navbar() {

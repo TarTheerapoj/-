@@ -1,18 +1,18 @@
 import Link from "next/link";
-import { ArrowRight, BarChart3, Dumbbell, MapPin, ChevronRight, Clock } from "lucide-react";
+import { ArrowRight, BarChart3, Dumbbell, MapPin, ChevronRight, Clock, BookOpen, Sparkles } from "lucide-react";
 import { SUMMARY_STATS, WORKOUTS } from "@/lib/data/workouts";
 
 const latest = SUMMARY_STATS.participationByYear[SUMMARY_STATS.participationByYear.length - 1];
 
 const TICKER_ITEMS = [
   "CROSSFIT OPEN 2026 THAILAND",
-  `${SUMMARY_STATS.totalAthletes} นักกีฬา · ${SUMMARY_STATS.totalAffiliates} Affiliates · Provinces: Coming Soon`,
+  `${SUMMARY_STATS.totalAthletes} นักกีฬา · ${SUMMARY_STATS.totalAffiliates} Affiliates · 7 จังหวัด · 4 ภาค`,
   "CROSSFIT OPEN 26.1 · 26.2 · 26.3",
-  "VIEW WORKOUTS →",
+  "MOVEMENT LIBRARY · 127 ท่า · VIDEO PREVIEW →",
   "CROSSFIT OPEN 2026 THAILAND",
-  `${SUMMARY_STATS.totalAthletes} นักกีฬา · ${SUMMARY_STATS.totalAffiliates} Affiliates · Provinces: Coming Soon`,
+  `${SUMMARY_STATS.totalAthletes} นักกีฬา · ${SUMMARY_STATS.totalAffiliates} Affiliates · 7 จังหวัด · 4 ภาค`,
   "CROSSFIT OPEN 26.1 · 26.2 · 26.3",
-  "VIEW WORKOUTS →",
+  "MOVEMENT LIBRARY · 127 ท่า · VIDEO PREVIEW →",
 ];
 
 const NEWS_CARDS = [
@@ -23,6 +23,7 @@ const NEWS_CARDS = [
     href: "/dashboard",
     accent: true,
     comingSoon: false,
+    isNew: false,
     iconBg: "#9BEC00",
     iconColor: "#111",
     iconLabel: "LIVE",
@@ -34,9 +35,34 @@ const NEWS_CARDS = [
     href: "/workouts",
     accent: false,
     comingSoon: false,
+    isNew: false,
     iconBg: "#111",
     iconColor: "#9BEC00",
     iconLabel: "WOD",
+  },
+  {
+    tag: "MOVEMENT LIBRARY",
+    title: "คลังท่าออกกำลังกาย 127 ท่า พร้อม Video",
+    sub: "35 ท่าพร้อมรายละเอียด · YouTube Preview · CrossFit Official →",
+    href: "/movements",
+    accent: false,
+    comingSoon: false,
+    isNew: true,
+    iconBg: "#111",
+    iconColor: "#9BEC00",
+    iconLabel: "MOV",
+  },
+  {
+    tag: "PROVINCES & AFFILIATES",
+    title: "CrossFit Affiliates ใกล้คุณ แยกตามจังหวัด",
+    sub: "24 Box · 7 จังหวัด · 4 ภาค · ค้นหา Box ใกล้คุณ →",
+    href: "/provinces",
+    accent: false,
+    comingSoon: false,
+    isNew: true,
+    iconBg: "#3b82f6",
+    iconColor: "#fff",
+    iconLabel: "MAP",
   },
   {
     tag: "LEADERBOARD",
@@ -45,6 +71,7 @@ const NEWS_CARDS = [
     href: "/leaderboard",
     accent: false,
     comingSoon: true,
+    isNew: false,
     iconBg: "#e8e8e8",
     iconColor: "#bbb",
     iconLabel: "",
@@ -109,11 +136,11 @@ export default function LandingPage() {
                 <p className="text-[2.5rem] font-black leading-none tabular-nums" style={{ color: "#9BEC00" }}>{SUMMARY_STATS.totalAffiliates}</p>
                 <p className="text-white/60 text-xs font-bold tracking-widest uppercase mt-1">Affiliates</p>
               </div>
-              <div className="bg-[#1a1a1a] px-6 py-8">
-                <p className="text-lg font-black leading-none text-white/20">—</p>
-                <p className="text-white/30 text-xs font-bold tracking-widest uppercase mt-1">Provinces</p>
-                <p className="text-[9px] font-black tracking-widest uppercase mt-1" style={{ color: "#9BEC00", opacity: 0.6 }}>Coming Soon</p>
-              </div>
+              <Link href="/provinces" className="bg-[#1a1a1a] px-6 py-8 hover:bg-[#222] transition-colors block">
+                <p className="text-[2.5rem] font-black leading-none tabular-nums text-white">7</p>
+                <p className="text-white/60 text-xs font-bold tracking-widest uppercase mt-1">Provinces</p>
+                <p className="text-[9px] font-black tracking-widest uppercase mt-1" style={{ color: "#9BEC00" }}>LIVE NOW ↗</p>
+              </Link>
               <div className="bg-[#1a1a1a] px-6 py-8">
                 <p className="text-lg font-black leading-none text-white/20">—</p>
                 <p className="text-white/30 text-xs font-bold tracking-widest uppercase mt-1">Divisions</p>
@@ -135,20 +162,64 @@ export default function LandingPage() {
         </div>
       </div>
 
+      {/* ─── NEW TODAY SPOTLIGHT ─────────────────────────────────── */}
+      <section className="bg-[#f4f4f4] border-b border-[#e0e0e0]">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 py-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full font-black text-[10px] tracking-widest uppercase" style={{ backgroundColor: "#9BEC00", color: "#111" }}>
+              <Sparkles className="w-3 h-3" />
+              อัพเดทวันนี้
+            </div>
+            <div className="h-px flex-1 bg-[#ddd]" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Link href="/movements" className="group flex items-center gap-4 bg-white border border-[#e8e8e8] hover:border-primary hover:shadow-sm transition-all px-5 py-4 rounded-xl">
+              <div className="w-11 h-11 shrink-0 flex items-center justify-center rounded-lg" style={{ backgroundColor: "#111" }}>
+                <BookOpen className="w-5 h-5" style={{ color: "#9BEC00" }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <p className="text-sm font-black text-[#111]">Movement Library</p>
+                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded" style={{ backgroundColor: "#9BEC00", color: "#111" }}>NEW</span>
+                </div>
+                <p className="text-xs text-[#888] truncate">35 ท่าพร้อมรายละเอียด · YouTube Preview · 127 ท่าทั้งหมด</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#ccc] group-hover:text-primary shrink-0 transition-colors" />
+            </Link>
+            <Link href="/provinces" className="group flex items-center gap-4 bg-white border border-[#e8e8e8] hover:border-[#3b82f6] hover:shadow-sm transition-all px-5 py-4 rounded-xl">
+              <div className="w-11 h-11 shrink-0 flex items-center justify-center rounded-lg" style={{ backgroundColor: "#3b82f6" }}>
+                <MapPin className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <p className="text-sm font-black text-[#111]">Provinces & Affiliates</p>
+                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded" style={{ backgroundColor: "#3b82f6", color: "#fff" }}>NEW</span>
+                </div>
+                <p className="text-xs text-[#888] truncate">24 Box · 7 จังหวัด · 4 ภาค · ค้นหา CrossFit ใกล้คุณ</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#ccc] group-hover:text-[#3b82f6] shrink-0 transition-colors" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ─── NEWS-STYLE CARDS ───────────────────────────────────── */}
       <section className="bg-[#f4f4f4] text-[#111]">
         <div className="max-w-7xl mx-auto">
-          {NEWS_CARDS.map(({ tag, title, sub, href, accent, comingSoon, iconBg, iconColor, iconLabel }) => (
+          {NEWS_CARDS.map(({ tag, title, sub, href, accent, comingSoon, isNew, iconBg, iconColor, iconLabel }) => (
             <Link
               key={href}
               href={href}
               className={`group flex items-center gap-6 px-6 sm:px-10 py-7 border-b border-[#ddd] transition-colors ${comingSoon ? "opacity-50 pointer-events-none" : "hover:bg-white"}`}
             >
               <div className="hidden sm:flex w-16 h-16 shrink-0 items-center justify-center font-black text-xs" style={{ backgroundColor: iconBg, color: iconColor }}>
-                {comingSoon ? <Clock className="w-5 h-5" /> : href === "/workouts" ? <Dumbbell className="w-6 h-6" /> : iconLabel}
+                {comingSoon ? <Clock className="w-5 h-5" /> : href === "/workouts" ? <Dumbbell className="w-6 h-6" /> : href === "/movements" ? <BookOpen className="w-6 h-6" /> : href === "/provinces" ? <MapPin className="w-6 h-6" /> : iconLabel}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-black tracking-[0.25em] uppercase mb-1" style={{ color: accent && !comingSoon ? "#9BEC00" : "#999" }}>{tag}</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-[10px] font-black tracking-[0.25em] uppercase" style={{ color: accent && !comingSoon ? "#9BEC00" : "#999" }}>{tag}</p>
+                  {isNew && <span className="text-[8px] font-black px-1.5 py-0.5 rounded" style={{ backgroundColor: "#9BEC00", color: "#111" }}>NEW</span>}
+                </div>
                 <p className="text-base sm:text-lg font-black leading-tight text-[#111] truncate">{title}</p>
                 {comingSoon
                   ? <p className="text-xs font-black tracking-widest uppercase mt-1" style={{ color: "#9BEC00", opacity: 0.7 }}>Coming Soon · รอ Update</p>
@@ -237,18 +308,22 @@ export default function LandingPage() {
 
       {/* ─── EXPLORE NAV STRIP ─────────────────────────────────── */}
       <section className="bg-[#f4f4f4] border-t border-[#ddd]">
-        <div className="max-w-7xl mx-auto px-6 sm:px-10 py-12 grid grid-cols-1 sm:grid-cols-3 gap-px bg-[#ddd]">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-[#ddd]">
           {[
-            { href: "/dashboard", icon: BarChart3, title: "ภาพรวม", desc: `${SUMMARY_STATS.totalAthletes} Athletes · ${SUMMARY_STATS.totalAffiliates} Affiliates · Charts`, iconBg: "#9BEC00", iconColor: "#111" },
-            { href: "/workouts",  icon: Dumbbell,  title: "เวิร์คเอาท์", desc: "26.1 · 26.2 · 26.3 · Score Stats",                                   iconBg: "#111",    iconColor: "#9BEC00" },
-            { href: "/provinces", icon: MapPin,     title: "จังหวัด", desc: "Provinces: Coming Soon · Affiliates Map",                             iconBg: "#3b82f6", iconColor: "#fff"  },
-          ].map(({ href, icon: Icon, title, desc, iconBg, iconColor }) => (
+            { href: "/dashboard",  icon: BarChart3, title: "ภาพรวม",       desc: `${SUMMARY_STATS.totalAthletes} Athletes · ${SUMMARY_STATS.totalAffiliates} Affiliates · Charts`, iconBg: "#9BEC00", iconColor: "#111",    isNew: false },
+            { href: "/workouts",   icon: Dumbbell,  title: "เวิร์คเอาท์",   desc: "26.1 · 26.2 · 26.3 · Score Stats",                                                          iconBg: "#111",    iconColor: "#9BEC00", isNew: false },
+            { href: "/movements",  icon: BookOpen,  title: "Movements",     desc: "127 ท่า · 35 Detail · YouTube Preview",                                                     iconBg: "#111",    iconColor: "#9BEC00", isNew: true  },
+            { href: "/provinces",  icon: MapPin,    title: "จังหวัด",       desc: "24 Box · 7 จังหวัด · 4 ภาค",                                                              iconBg: "#3b82f6", iconColor: "#fff",    isNew: true  },
+          ].map(({ href, icon: Icon, title, desc, iconBg, iconColor, isNew }) => (
             <Link key={href} href={href} className="group bg-[#f4f4f4] hover:bg-white px-8 py-8 flex items-start gap-4 transition-colors">
-              <div className="p-2.5 transition-all" style={{ backgroundColor: iconBg, color: iconColor }}>
+              <div className="p-2.5 transition-all shrink-0" style={{ backgroundColor: iconBg, color: iconColor }}>
                 <Icon className="w-4 h-4" />
               </div>
               <div>
-                <p className="font-black text-[#111] text-base">{title}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-black text-[#111] text-base">{title}</p>
+                  {isNew && <span className="text-[8px] font-black px-1 py-0.5 rounded" style={{ backgroundColor: "#9BEC00", color: "#111" }}>NEW</span>}
+                </div>
                 <p className="text-xs text-[#888] font-medium mt-0.5">{desc}</p>
               </div>
             </Link>

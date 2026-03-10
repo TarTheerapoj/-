@@ -379,11 +379,11 @@ function MovementBadge({ name, slug }: { name: string; slug?: string }) {
     return (
       <a
         href={`/movements/${slug}`}
-        className="inline-flex items-center gap-1 text-xs border rounded-full px-2.5 py-0.5 font-medium transition-all hover:shadow-sm"
-        style={{ borderColor: "#9BEC0060", color: "#9BEC00", backgroundColor: "#9BEC0010" }}
+        className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1 font-bold transition-all hover:opacity-90 hover:shadow-md"
+        style={{ backgroundColor: "#9BEC00", color: "#111" }}
       >
         {name}
-        <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+        <ExternalLink className="w-2.5 h-2.5 opacity-60 shrink-0" />
       </a>
     );
   }

@@ -116,31 +116,57 @@ export default async function MovementDetailPage({
             )}
           </div>
 
-          {/* Title */}
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div>
+          {/* Title + Thumbnail */}
+          <div className="flex items-start justify-between gap-6 flex-wrap">
+            <div className="flex-1 min-w-0">
               <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white leading-tight">
                 {entry.name}
               </h1>
               {m?.nameTH && (
                 <p className="text-white/35 text-sm mt-1">{m.nameTH}</p>
               )}
+              <div className="mt-3">
+                <DifficultyDots level={entry.difficulty} />
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              {entry.youtubeId && (
-                <a
-                  href={`https://www.youtube.com/watch?v=${entry.youtubeId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:opacity-90"
-                  style={{ backgroundColor: "#FF0000", color: "white" }}
-                >
-                  <Youtube className="w-3.5 h-3.5" />
-                  ดูวิดีโอ
-                </a>
-              )}
-              <DifficultyDots level={entry.difficulty} />
-            </div>
+
+            {/* YouTube Thumbnail Card */}
+            {entry.youtubeId && (
+              <a
+                href={`https://www.youtube.com/watch?v=${entry.youtubeId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative shrink-0 rounded-xl overflow-hidden border border-white/10 hover:border-white/30 transition-all hover:shadow-xl"
+                style={{ width: 220, minWidth: 160 }}
+              >
+                {/* Thumbnail image */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`https://img.youtube.com/vi/${entry.youtubeId}/mqdefault.jpg`}
+                  alt={`${entry.name} video`}
+                  width={220}
+                  height={124}
+                  className="w-full object-cover block"
+                  style={{ aspectRatio: "16/9" }}
+                />
+                {/* Play overlay */}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/10 transition-all">
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform"
+                    style={{ backgroundColor: "#FF0000" }}
+                  >
+                    <Youtube className="w-5 h-5 text-white" />
+                  </div>
+                </div>
+                {/* Label strip */}
+                <div className="absolute bottom-0 left-0 right-0 px-2.5 py-1.5 bg-black/60 backdrop-blur-sm">
+                  <p className="text-[10px] font-bold text-white/90 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
+                    ดูวิดีโอบน YouTube
+                  </p>
+                </div>
+              </a>
+            )}
           </div>
 
           {/* Quick info strip */}

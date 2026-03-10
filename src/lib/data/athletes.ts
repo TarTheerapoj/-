@@ -173,23 +173,41 @@ export const ATHLETES: Athlete[] = [
 ];
 
 export const AFFILIATES = [
-  { name: "CrossFit Bangkok", athletes: 42, province: "กรุงเทพฯ" },
-  { name: "CrossFit Chiang Mai", athletes: 18, province: "เชียงใหม่" },
-  { name: "CrossFit Phuket", athletes: 15, province: "ภูเก็ต" },
-  { name: "CrossFit Pattaya", athletes: 12, province: "ชลบุรี" },
-  { name: "CrossFit Korat", athletes: 10, province: "นครราชสีมา" },
-  { name: "CrossFit Khon Kaen", athletes: 8, province: "ขอนแก่น" },
-  { name: "CrossFit Hat Yai", athletes: 7, province: "สงขลา" },
-  { name: "CrossFit Udon", athletes: 6, province: "อุดรธานี" },
+  // ภาคกลาง — กรุงเทพฯ
+  { name: "Crossfit Naga",             athletes: 64, province: "กรุงเทพฯ",        region: "ภาคกลาง" },
+  { name: "Thonglor CrossFit",         athletes: 58, province: "กรุงเทพฯ",        region: "ภาคกลาง" },
+  { name: "East West CrossFit",        athletes: 42, province: "กรุงเทพฯ",        region: "ภาคกลาง" },
+  { name: "CrossFit Peak 365",         athletes: 36, province: "กรุงเทพฯ",        region: "ภาคกลาง" },
+  { name: "IAOT CrossFit",             athletes: 31, province: "กรุงเทพฯ",        region: "ภาคกลาง" },
+  { name: "Hundred Ten CrossFit",      athletes: 31, province: "กรุงเทพฯ",        region: "ภาคกลาง" },
+  { name: "CrossFit Ten500",           athletes: 28, province: "กรุงเทพฯ",        region: "ภาคกลาง" },
+  { name: "Power Up CrossFit",         athletes: 23, province: "กรุงเทพฯ",        region: "ภาคกลาง" },
+  { name: "CrossFit TenFive Bangwa",   athletes: 9,  province: "กรุงเทพฯ",        region: "ภาคกลาง" },
+  { name: "Arbkk CrossFit",            athletes: 7,  province: "กรุงเทพฯ",        region: "ภาคกลาง" },
+  { name: "Podium Gym CrossFit",       athletes: 2,  province: "กรุงเทพฯ",        region: "ภาคกลาง" },
+  // ภาคเหนือ
+  { name: "TNB CrossFit",              athletes: 33, province: "เชียงใหม่",       region: "ภาคเหนือ" },
+  { name: "CrossFit Pulmo",            athletes: 64, province: "เชียงใหม่",       region: "ภาคเหนือ" },
+  { name: "CrossFit Chiang Mai",       athletes: 44, province: "เชียงใหม่",       region: "ภาคเหนือ" },
+  // ภาคใต้ — ภูเก็ต
+  { name: "Motus Cultura CrossFit",    athletes: 42, province: "ภูเก็ต",          region: "ภาคใต้" },
+  { name: "CrossFit DCHKT",            athletes: 32, province: "ภูเก็ต",          region: "ภาคใต้" },
+  { name: "CrossFit Pirate Camp",      athletes: 16, province: "ภูเก็ต",          region: "ภาคใต้" },
+  { name: "CrossFit Phuket",           athletes: 3,  province: "ภูเก็ต",          region: "ภาคใต้" },
+  { name: "Lyuten Fitness",            athletes: 0,  province: "ภูเก็ต",          region: "ภาคใต้" },
+  { name: "CrossFit Siam 31",          athletes: 0,  province: "ภูเก็ต",          region: "ภาคใต้" },
+  // ภาคใต้ — สุราษฎร์ธานี
+  { name: "Lamai Beach CrossFit",      athletes: 6,  province: "สุราษฎร์ธานี",   region: "ภาคใต้" },
+  { name: "Koh Samui CrossFit",        athletes: 4,  province: "สุราษฎร์ธานี",   region: "ภาคใต้" },
+  { name: "Koh Tao CrossFit",          athletes: 0,  province: "สุราษฎร์ธานี",   region: "ภาคใต้" },
+  // ภาคตะวันตก
+  { name: "CrossFit Hua Hin",          athletes: 23, province: "ประจวบคีรีขันธ์", region: "ภาคตะวันตก" },
 ];
 
 export const PROVINCE_STATS = [
-  { province: "กรุงเทพฯ", athletes: 89, affiliates: 6 },
-  { province: "เชียงใหม่", athletes: 34, affiliates: 3 },
-  { province: "ภูเก็ต", athletes: 28, affiliates: 2 },
-  { province: "ชลบุรี", athletes: 22, affiliates: 2 },
-  { province: "นครราชสีมา", athletes: 18, affiliates: 2 },
-  { province: "ขอนแก่น", athletes: 14, affiliates: 1 },
-  { province: "สงขลา", athletes: 12, affiliates: 1 },
-  { province: "อุดรธานี", athletes: 10, affiliates: 1 },
+  { province: "กรุงเทพฯ",        region: "ภาคกลาง",     athletes: 331, affiliates: 11 },
+  { province: "เชียงใหม่",       region: "ภาคเหนือ",    athletes: 141, affiliates: 3  },
+  { province: "ภูเก็ต",          region: "ภาคใต้",      athletes: 93,  affiliates: 6  },
+  { province: "ประจวบคีรีขันธ์", region: "ภาคตะวันตก",  athletes: 23,  affiliates: 1  },
+  { province: "สุราษฎร์ธานี",   region: "ภาคใต้",      athletes: 10,  affiliates: 3  },
 ];
